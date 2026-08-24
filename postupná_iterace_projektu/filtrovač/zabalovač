@@ -1,0 +1,45 @@
+from pathlib import Path
+import shutil
+
+# Kategorie k přenosu
+CATEGORIES = [
+    "ABSEN",
+    "INDIV",
+    "LEKAR",
+    "DOVOL", 
+    "NEMOC", 
+
+    "DROBY_OCR",
+    "DROBY_OTECD",
+    "DROBY_PLACV",
+    "DROBY_STUDV",
+    "DROBY_SVZOZ"
+]
+
+base_dir = Path.cwd()
+
+# Najde nejnovější složku typu XX_DATA
+data_folders = sorted(
+    [d for d in base_dir.iterdir() if d.is_dir() and d.name.endswith("_DATA")]
+)
+
+if not data_folders:
+    raise FileNotFoundError("Nebyla nalezena žádná složka typu XX_DATA.")
+
+source_folder = data_folders[-1]
+print(f"Zdrojová složka: {source_folder.name}")
+
+for category in CATEGORIES:
+    target_folder = base_dir / category
+    target_folder.mkdir(exist_ok=True)
+
+    pattern = f"vysledek_porovnani_{category}*"
+    files = list(source_folder.glob(pattern))
+
+    if not files:
+        print(f"Soubor pro {category} nebyl nalezen.")
+        continue
+
+    for file in files:
+        shutil.copy2(file, target_folder)
+        print(f"Zkopírováno: {file.name} -> {target_folder}")
